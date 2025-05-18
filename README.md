@@ -1,6 +1,11 @@
 # Raspberry Pi Setup
 Collection of bash scripts for Raspberry Pi OS which are intended to simplify access to commonly used features and utilities on your Raspberry Pi devices
 
+To install run this in your bash terminal
+```
+wget -O - https://raw.githubusercontent.com/chiragpai/raspberrypi-setup/refs/heads/main/setup.sh | bash
+```
+
 # Currently available scripts
 
 ## For system configuration view & edit

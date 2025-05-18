@@ -43,13 +43,14 @@ else
     git clone "$GITHUB_REPO_LINK" "$SCRIPTS_DIR"
 fi
 
-echo $PATH | grep -q $SCRIPTS_DIR
+cd $SCRIPTS_DIR/scripts && chmod 755 ./*
 
+echo $PATH | grep -q $SCRIPTS_DIR
 if [ $? -ne 0 ]; then
     # Setup .bashrc to use the scripts
     echo "" >> $HOME/.bashrc
     echo "# Raspberry Pi scripts from $GITHUB_REPO_LINK" >> $HOME/.bashrc
-    echo "PATH=\$PATH:$SCRIPTS_DIR" >> $HOME/.bashrc
+    echo "PATH=\$PATH:$SCRIPTS_DIR/scripts" >> $HOME/.bashrc
 
     source $HOME/.bashrc
     echo "Updated .bashrc to include $SCRIPTS_DIR"
