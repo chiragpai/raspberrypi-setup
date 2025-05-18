@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Script Name: setup.sh
@@ -8,44 +8,51 @@
 #
 
 # Check if running on Raspberry PI
-RASPI_MODEL=cat /proc/device-tree/model | awk 'END {print $1" "$2}'
-if [ $RASPI_MODEL != "Raspberry Pi" ]; then
+RASPI_MODEL=$(awk 'END {print $1" "$2}' </proc/device-tree/model)
+if [ "$RASPI_MODEL" != "Raspberry Pi" ]; then
     echo "[!] Device does not seem to be a Raspberry Pi. Continue? (Y/n)"
-    read -r -p "Are you sure? [Y/n]" response
-    response=${response,,} # tolower
-    if [[ $response =~ ^(n| ) ]] || [[ -z $response ]]; then
+    read -r -p "Are you sure? [Y/n] " response
+    response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
+    if [[ "$response" =~ ^(n| ) ]] || [[ -z "$response" ]]; then
         exit 1
     else
         echo "[!] Proceeding with setup. Scripts may not work as intended..."
     fi
 fi 
 
-# Check for updates and install
-sudo apt-get update
-sudo apt-get upgrade -y
-
 # Install git
 sudo apt-get install git -y
 
-USER_DIR=`$HOME`
+USER_DIR="$HOME"
 BIN_DIR="$HOME/bin"
-SCRIPTS_DIR="/raspberrypi-scripts"
+SCRIPTS_DIR="$BIN_DIR/raspberrypi-scripts"
 GITHUB_REPO_LINK="https://github.com/chiragpai/raspberrypi-setup.git"
 
 # Check if ~/bin exists, else create it
-if [ ! -d $BIN_DIR ]; then
+if [ ! -d "$BIN_DIR" ]; then
     echo "[!] $BIN_DIR does not exist. Creating it..."
-    mkdir $BIN_DIR
+    mkdir "$BIN_DIR"
 else
-    echo "[.] $BIN_DIR exists. All scripts will be checkout there."
+    echo "[.] $BIN_DIR exists. All scripts will be checked out there."
 fi
 
-# Clone the scripts
-git clone $GITHUB_REPO_LINK $BIN_DIR$SCRIPTS_DIR
+if [ -d "$SCRIPTS_DIR" ]; then
+    cd $SCRIPTS_DIR && git pull
+else
+    # Clone the scripts
+    git clone "$GITHUB_REPO_LINK" "$SCRIPTS_DIR"
+fi
 
-# Setup .bashrc to use the scripts
-echo "" >> $HOME/.bashrc
-echo "# Raspberry Pi scripts from $GITHUB_REPO_LINK" >> $HOME/.bashrc
-echo "\$PATH=\$PATH:$BIN_DIR$SCRIPTS_DIR" >> $HOME/.bashrc
+echo $PATH | grep -q $SCRIPTS_DIR
 
-source $HOME/.bashrc
+if [ $? -ne 0 ]; then
+    # Setup .bashrc to use the scripts
+    echo "" >> $HOME/.bashrc
+    echo "# Raspberry Pi scripts from $GITHUB_REPO_LINK" >> $HOME/.bashrc
+    echo "PATH=\$PATH:$SCRIPTS_DIR" >> $HOME/.bashrc
+
+    source $HOME/.bashrc
+    echo "Updated .bashrc to include $SCRIPTS_DIR"
+else
+    echo "[.] $SCRIPTS_DIR already included in ~/.bashrc"
+fi
